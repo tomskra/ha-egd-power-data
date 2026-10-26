@@ -1,0 +1,11 @@
+{
+  "domain": "egd_power_data",
+  "name": "EGD Power Data",
+  "version": "1.0.0",
+  "documentation": "https://github.com/tomskra/ha-egd-power-data",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@tomskra"],
+  "iot_class": "cloud_polling",
+  "config_flow": true
+}

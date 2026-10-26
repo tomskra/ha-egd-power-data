@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Připojit EGD Distribuci",
+        "description": "Zadejte Client ID, Client Secret a spotřební EAN z portálu Distribuce24.",
+        "data": {
+          "client_id": "Client ID",
+          "client_secret": "Client Secret",
+          "ean": "EAN"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Tento EAN už je nastaven."
+    }
+  }
+}
