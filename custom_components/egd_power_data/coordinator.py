@@ -143,6 +143,9 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     @staticmethod
     def _parse_profile(payload: Any, profile: str) -> tuple[float | None, dict[str, Any]]:
         """Convert a profile response to daily kWh and retain useful diagnostics."""
+        # EG.D may return a single matching profile as an object instead of an array.
+        if isinstance(payload, dict) and payload.get("profile") == profile:
+            payload = [payload]
         if not isinstance(payload, list):
             if isinstance(payload, dict):
                 message = payload.get("message") or payload.get("error_description") or payload.get("error")

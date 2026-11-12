@@ -1,7 +1,7 @@
 {
   "domain": "egd_power_data",
   "name": "EGD Power Data",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "documentation": "https://github.com/tomskra/ha-egd-power-data",
   "requirements": [],
   "dependencies": [],
