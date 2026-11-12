@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.event import async_track_time_change
 
 from .const import DOMAIN
 from .coordinator import EGDPowerDataCoordinator
@@ -21,6 +22,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up EGD sensors from a config entry."""
     coordinator = EGDPowerDataCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
+    entry.async_on_unload(
+        async_track_time_change(
+            hass, coordinator._scheduled_refresh, hour=17, minute=13, second=0
+        )
+    )
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))

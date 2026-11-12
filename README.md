@@ -10,7 +10,7 @@ When migrating from the original `egdczpowerdata` integration, remove its YAML c
 
 ## Data updates
 
-Consumption and generation are fetched together once per update cycle, every hour by default. Home Assistant manages updates for both entities; no status sensor or `homeassistant.update_entity` automation is needed.
+Consumption and generation are fetched together at setup and then once daily at 17:13 (Home Assistant's local time). EGD updates meter data once per day in the afternoon; frequent polling can overload the API. Home Assistant manages updates for both entities; no status sensor or `homeassistant.update_entity` automation is needed.
 
 The integration creates two sensors:
 

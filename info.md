@@ -4,4 +4,4 @@ Samostatná Home Assistant integrace pro načítání denní spotřeby a výroby
 
 Přidejte ji v **Nastavení → Zařízení a služby → Přidat integraci → EGD Power Data**. Zadejte Client ID, Client Secret a spotřební EAN z portálu Distribuce24. Při přechodu ze staré integrace nejprve odstraňte její YAML konfiguraci `sensor: - platform: egdczpowerdata`; nastavení se nepřenáší automaticky.
 
-Spotřeba (`ICC1`) a výroba (`ISC1`) se načítají společně jednou za hodinu. Status senzor ani automatizace pro ruční aktualizaci nejsou potřeba.
+Spotřeba (`ICC1`) a výroba (`ISC1`) se načítají společně při spuštění integrace a potom jednou denně v 17:13 místního času. Status senzor ani automatizace pro ruční aktualizaci nejsou potřeba.

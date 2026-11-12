@@ -10,7 +10,7 @@ Pokud přecházíte z původní `egdczpowerdata`, nejprve odstraňte starou YAML
 
 ## Aktualizace dat
 
-Spotřeba a výroba se načítají společně jedním aktualizačním cyklem, standardně jednou za hodinu. Aktualizaci obou entit řídí Home Assistant; není potřeba status senzor ani automatizace `homeassistant.update_entity`.
+Spotřeba a výroba se načítají společně při spuštění integrace a potom jednou denně v 17:13 (místní čas Home Assistantu). EG.D aktualizuje naměřená data jednou denně odpoledne a časté dotazování může API přetížit. Aktualizaci obou entit řídí Home Assistant; není potřeba status senzor ani automatizace `homeassistant.update_entity`.
 
 Integrace vytváří dvě entity:
 

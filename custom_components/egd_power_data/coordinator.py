@@ -4,20 +4,20 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 import logging
+from collections import Counter
 from typing import Any
 from zoneinfo import ZoneInfo
 
 import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DATA_URL, DOMAIN, TOKEN_URL
 
 _LOGGER = logging.getLogger(__name__)
-UPDATE_INTERVAL = timedelta(hours=1)
 REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=30)
 
 
@@ -25,13 +25,19 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     """Fetch both profiles together once per interval for all entities."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=UPDATE_INTERVAL)
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=None)
+        self.hass = hass
         self.entry = entry
         self.ean: str = entry.data["ean"]
         self.days: int = int(entry.data.get("days", 1))
         self._session = async_get_clientsession(hass)
         self._token: str | None = None
         self._token_expires_at = datetime.min.replace(tzinfo=UTC)
+
+    @callback
+    def _scheduled_refresh(self, now: datetime) -> None:
+        """Refresh once daily after EGD normally publishes new readings."""
+        self.hass.async_create_task(self.async_request_refresh())
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
         """Fetch consumption and production data in one coordinator cycle."""
@@ -55,9 +61,11 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                 ) as response:
                     response.raise_for_status()
                     payload = await response.json()
+                value, details = self._parse_profile(payload, profile)
                 results[profile] = {
-                    "value": self._total_value(payload),
+                    "value": value,
                     "attributes": {
+                        **details,
                         "profile": profile,
                         "ean": self.ean,
                         "local_stime": start.strftime("%Y-%m-%d %H:%M:%S %Z%z"),
@@ -66,6 +74,8 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         "etime": params["to"],
                     },
                 }
+                if value is None:
+                    _LOGGER.warning("EGD returned no readings for profile %s", profile)
             return results
         except (aiohttp.ClientError, TimeoutError, ValueError, KeyError, TypeError) as err:
             raise UpdateFailed(f"EGD API request failed: {err}") from err
@@ -102,15 +112,73 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
         token = payload.get("access_token")
         if not token:
             raise UpdateFailed("EGD OAuth response did not contain an access token")
-        expires_in = int(payload.get("expires_in", 300))
         self._token = token
-        self._token_expires_at = now + timedelta(seconds=max(0, expires_in - 60))
+        local_now = datetime.now(ZoneInfo("Europe/Prague"))
+        self._token_expires_at = local_now.replace(
+            hour=23, minute=59, second=0, microsecond=0
+        ).astimezone(UTC)
         return token
 
     @staticmethod
-    def _total_value(payload: Any) -> float:
-        """Convert quarter-hour readings to a daily kWh total."""
+    def _parse_profile(payload: Any, profile: str) -> tuple[float | None, dict[str, Any]]:
+        """Convert a profile response to daily kWh and retain useful diagnostics."""
+        if not isinstance(payload, list):
+            raise ValueError("Unexpected EGD response: expected a list of profiles")
+
+        profile_data = [
+            item for item in payload
+            if isinstance(item, dict) and item.get("profile") == profile
+        ]
+        if payload and not profile_data:
+            raise ValueError(f"EGD response did not contain profile {profile}")
+
+        readings: list[dict[str, Any]] = []
+        units: set[str] = set()
+        reported_total = 0
+        for item in profile_data:
+            data = item.get("data")
+            if not isinstance(data, list):
+                raise ValueError(f"EGD response for {profile} has no data list")
+            readings.extend(record for record in data if isinstance(record, dict))
+            if item.get("units"):
+                units.add(str(item["units"]).upper())
+            if isinstance(item.get("total"), int):
+                reported_total += item["total"]
+
+        details: dict[str, Any] = {
+            "reading_count": len(readings),
+            "api_reported_total": reported_total,
+        }
+        if not readings:
+            details["data_status"] = "No readings returned by EGD"
+            details["units"] = next(iter(units), None)
+            return None, details
+
+        if len(units) != 1:
+            raise ValueError(f"EGD returned missing or inconsistent units for {profile}")
+        unit = units.pop()
+        if unit == "KW":
+            divisor = 4
+        elif unit == "KWH":
+            divisor = 1
+        else:
+            raise ValueError(f"Unsupported EGD unit {unit!r} for {profile}")
+
         try:
-            return sum(float(item["value"]) for item in payload[0]["data"]) / 4
-        except (IndexError, KeyError, TypeError):
-            return 0.0
+            value = sum(float(record["value"]) for record in readings) / divisor
+        except (KeyError, TypeError, ValueError) as err:
+            raise ValueError(f"Invalid reading value in EGD response for {profile}") from err
+
+        statuses = Counter(
+            str(record["status"]) for record in readings if record.get("status")
+        )
+        details.update(
+            {
+                "data_status": "Readings received",
+                "units": unit,
+                "status_counts": dict(statuses),
+                "first_reading": readings[0].get("timestamp"),
+                "last_reading": readings[-1].get("timestamp"),
+            }
+        )
+        return value, details

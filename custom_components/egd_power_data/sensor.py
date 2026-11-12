@@ -6,6 +6,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfEnergy
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -46,6 +47,12 @@ class EGDPowerDataSensor(CoordinatorEntity[EGDPowerDataCoordinator], SensorEntit
         self._profile = profile
         self._attr_name = name
         self._attr_unique_id = f"{coordinator.ean}_{unique_suffix}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, coordinator.ean)},
+            name=f"EGD {coordinator.ean}",
+            manufacturer="EG.D Distribuce",
+            model="Electricity metering",
+        )
 
     @property
     def native_value(self) -> float | None:
