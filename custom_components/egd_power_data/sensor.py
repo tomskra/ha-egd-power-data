@@ -23,10 +23,23 @@ async def async_setup_entry(
     coordinator: EGDPowerDataCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         [
-            EGDPowerDataSensor(coordinator, "ICC1", "Spotřeba", "consumption"),
-            EGDPowerDataSensor(coordinator, "ISC1", "Výroba", "production"),
             EGDPowerDataSensor(
-                coordinator, "ICCS", "Sdílená spotřeba", "shared_consumption"
+                coordinator,
+                "ICC1",
+                "Spotřeba za předchozí den",
+                "consumption",
+            ),
+            EGDPowerDataSensor(
+                coordinator,
+                "ISC1",
+                "Výroba za předchozí den",
+                "production",
+            ),
+            EGDPowerDataSensor(
+                coordinator,
+                "ICCS",
+                "Sdílená spotřeba za předchozí den",
+                "shared_consumption",
             ),
         ]
     )

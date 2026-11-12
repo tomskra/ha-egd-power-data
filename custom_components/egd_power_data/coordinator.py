@@ -89,6 +89,8 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         **details,
                         "profile": profile,
                         "ean": self.ean,
+                        "data_date": start.date().isoformat(),
+                        "measurement_period": "previous_day",
                         "local_stime": start.strftime("%Y-%m-%d %H:%M:%S %Z%z"),
                         "local_etime": end.strftime("%Y-%m-%d %H:%M:%S %Z%z"),
                         "stime": params["from"],
