@@ -52,7 +52,7 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             }
             headers = {"Authorization": f"Bearer {token}"}
             results: dict[str, dict[str, Any]] = {}
-            for profile in ("ICC1", "ISC1", "ICCS"):
+            for profile in ("ICQ2", "ISQ2", "ICCS"):
                 async with self._session.get(
                     DATA_URL,
                     headers=headers,

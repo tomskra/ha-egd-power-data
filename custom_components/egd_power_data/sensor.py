@@ -25,13 +25,13 @@ async def async_setup_entry(
         [
             EGDPowerDataSensor(
                 coordinator,
-                "ICC1",
+                "ICQ2",
                 "Spotřeba za předchozí den",
                 "consumption",
             ),
             EGDPowerDataSensor(
                 coordinator,
-                "ISC1",
+                "ISQ2",
                 "Výroba za předchozí den",
                 "production",
             ),
