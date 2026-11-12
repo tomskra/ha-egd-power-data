@@ -12,12 +12,13 @@ When migrating from the original `egdczpowerdata` integration, remove its YAML c
 
 Consumption and generation are fetched together at setup and then once daily at 17:13 (Home Assistant's local time). EGD updates meter data once per day in the afternoon; frequent polling can overload the API. Home Assistant manages updates for both entities; no status sensor or `homeassistant.update_entity` automation is needed.
 
-The integration creates two sensors:
+The integration creates these sensors:
 
-- **Consumption** (`ICC1`) — daily consumption for the previous day.
-- **Generation** (`ISC1`) — daily generation for the previous day.
+- **Consumption** (`ICQ2`) — daily energy drawn from the grid.
+- **Generation** (`ISQ2`) — daily energy delivered to the grid.
+- **Shared consumption** (`ICCS`) — available only when EG.D returns this profile for the metering point.
 
-The measured period is available in each sensor's attributes.
+The measured period, interval minimum and maximum, record count, and reading statuses are available in each sensor's attributes. Empty profiles are shown as `unknown` rather than zero.
 
 ## Troubleshooting
 

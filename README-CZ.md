@@ -12,12 +12,13 @@ Pokud přecházíte z původní `egdczpowerdata`, nejprve odstraňte starou YAML
 
 Spotřeba a výroba se načítají společně při spuštění integrace a potom jednou denně v 17:13 (místní čas Home Assistantu). EG.D aktualizuje naměřená data jednou denně odpoledne a časté dotazování může API přetížit. Aktualizaci obou entit řídí Home Assistant; není potřeba status senzor ani automatizace `homeassistant.update_entity`.
 
-Integrace vytváří dvě entity:
+Integrace vytváří tyto entity:
 
-- **Spotřeba** (`ICC1`) – denní spotřeba za předchozí den.
-- **Výroba** (`ISC1`) – denní výroba za předchozí den.
+- **Spotřeba** (`ICQ2`) – denní energie odebraná ze sítě.
+- **Výroba** (`ISQ2`) – denní energie dodaná do sítě.
+- **Sdílená spotřeba** (`ICCS`) – dostupná pouze tehdy, pokud EG.D tento profil pro odběrné místo vrací.
 
-Časové údaje o načteném období jsou dostupné v atributech senzorů.
+Časové údaje o období, minimum a maximum čtvrthodinové hodnoty, počet záznamů a stavové kódy jsou v atributech senzorů. Prázdný profil se zobrazí jako `unknown`, nikoli jako nula.
 
 ## Problémy
 

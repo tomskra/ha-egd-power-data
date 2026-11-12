@@ -52,7 +52,7 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             }
             headers = {"Authorization": f"Bearer {token}"}
             results: dict[str, dict[str, Any]] = {}
-            for profile in ("ICC1", "ISC1"):
+            for profile in ("ICQ2", "ISQ2", "ICCS"):
                 async with self._session.get(
                     DATA_URL,
                     headers=headers,
@@ -74,7 +74,7 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         "etime": params["to"],
                     },
                 }
-                if value is None:
+                if value is None and profile != "ICCS":
                     _LOGGER.warning("EGD returned no readings for profile %s", profile)
             return results
         except (aiohttp.ClientError, TimeoutError, ValueError, KeyError, TypeError) as err:
@@ -165,9 +165,10 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             raise ValueError(f"Unsupported EGD unit {unit!r} for {profile}")
 
         try:
-            value = sum(float(record["value"]) for record in readings) / divisor
+            interval_energy = [float(record["value"]) / divisor for record in readings]
         except (KeyError, TypeError, ValueError) as err:
             raise ValueError(f"Invalid reading value in EGD response for {profile}") from err
+        value = sum(interval_energy)
 
         statuses = Counter(
             str(record["status"]) for record in readings if record.get("status")
@@ -176,6 +177,8 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             {
                 "data_status": "Readings received",
                 "units": unit,
+                "minimum_kwh": min(interval_energy),
+                "maximum_kwh": max(interval_energy),
                 "status_counts": dict(statuses),
                 "first_reading": readings[0].get("timestamp"),
                 "last_reading": readings[-1].get("timestamp"),
