@@ -16,7 +16,7 @@ Integrace vytváří tyto entity:
 
 - **Spotřeba** (`ICQ2`) – denní energie odebraná ze sítě, načtená přímo z čtvrthodinového energetického profilu v kWh.
 - **Výroba** (`ISQ2`) – denní energie dodaná do sítě, načtená přímo z čtvrthodinového energetického profilu v kWh.
-- **Sdílená spotřeba** (`ICCS`) – dostupná pouze tehdy, pokud EG.D tento profil pro odběrné místo vrací.
+- **Spotřeba pokrytá vůdčím místem** (`ICCS`) – profil určený pouze pro odběrná místa zapojená do sdílení v bytovém domě. Nejde o profily obchodní a distribuční spotřeby z portálu Distribuce24; ty OpenAPI neposkytuje.
 
 Časové údaje o období, minimum a maximum čtvrthodinové hodnoty, počet záznamů a stavové kódy jsou v atributech senzorů. Prázdný profil se zobrazí jako `unknown`, nikoli jako nula.
 

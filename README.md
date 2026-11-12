@@ -16,7 +16,7 @@ The integration creates these sensors:
 
 - **Consumption** (`ICQ2`) — daily energy drawn from the grid, read directly from the quarter-hour energy profile in kWh.
 - **Generation** (`ISQ2`) — daily energy delivered to the grid, read directly from the quarter-hour energy profile in kWh.
-- **Shared consumption** (`ICCS`) — available only when EG.D returns this profile for the metering point.
+- **Consumption covered by the leading metering point** (`ICCS`) — only for metering points sharing electricity within an apartment building. This is not the commercial/distribution sharing data shown in Distribuce24; those profiles are not exposed by the OpenAPI.
 
 The measured period, interval minimum and maximum, record count, and reading statuses are available in each sensor's attributes. Empty profiles are shown as `unknown` rather than zero.
 

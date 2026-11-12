@@ -38,7 +38,7 @@ async def async_setup_entry(
             EGDPowerDataSensor(
                 coordinator,
                 "ICCS",
-                "Sdílená spotřeba za předchozí den",
+                "Spotřeba pokrytá vůdčím místem za předchozí den",
                 "shared_consumption",
             ),
         ]
