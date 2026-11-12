@@ -14,8 +14,8 @@ Spotřeba a výroba se načítají společně při spuštění integrace a potom
 
 Integrace vytváří tyto entity:
 
-- **Spotřeba** (`ICQ2`) – denní energie odebraná ze sítě.
-- **Výroba** (`ISQ2`) – denní energie dodaná do sítě.
+- **Spotřeba** (`ICC1`) – denní energie odebraná ze sítě, přepočtená z čtvrthodinových hodnot výkonu.
+- **Výroba** (`ISC1`) – denní energie dodaná do sítě, přepočtená z čtvrthodinových hodnot výkonu.
 - **Sdílená spotřeba** (`ICCS`) – dostupná pouze tehdy, pokud EG.D tento profil pro odběrné místo vrací.
 
 Časové údaje o období, minimum a maximum čtvrthodinové hodnoty, počet záznamů a stavové kódy jsou v atributech senzorů. Prázdný profil se zobrazí jako `unknown`, nikoli jako nula.

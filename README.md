@@ -14,8 +14,8 @@ Consumption and generation are fetched together at setup and then once daily at 
 
 The integration creates these sensors:
 
-- **Consumption** (`ICQ2`) — daily energy drawn from the grid.
-- **Generation** (`ISQ2`) — daily energy delivered to the grid.
+- **Consumption** (`ICC1`) — daily energy drawn from the grid, converted from quarter-hour kW values.
+- **Generation** (`ISC1`) — daily energy delivered to the grid, converted from quarter-hour kW values.
 - **Shared consumption** (`ICCS`) — available only when EG.D returns this profile for the metering point.
 
 The measured period, interval minimum and maximum, record count, and reading statuses are available in each sensor's attributes. Empty profiles are shown as `unknown` rather than zero.

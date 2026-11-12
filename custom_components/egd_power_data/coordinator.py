@@ -52,16 +52,37 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             }
             headers = {"Authorization": f"Bearer {token}"}
             results: dict[str, dict[str, Any]] = {}
-            for profile in ("ICQ2", "ISQ2", "ICCS"):
+            for profile in ("ICC1", "ISC1", "ICCS"):
                 async with self._session.get(
                     DATA_URL,
                     headers=headers,
                     params={**params, "profile": profile},
                     timeout=REQUEST_TIMEOUT,
                 ) as response:
-                    response.raise_for_status()
-                    payload = await response.json()
-                value, details = self._parse_profile(payload, profile)
+                    if response.status >= 400 and profile == "ICCS":
+                        value = None
+                        details = {
+                            "data_status": f"Optional profile unavailable (HTTP {response.status})",
+                            "reading_count": 0,
+                            "api_reported_total": 0,
+                        }
+                        payload = None
+                    else:
+                        response.raise_for_status()
+                        payload = await response.json()
+                if payload is not None:
+                    try:
+                        value, details = self._parse_profile(payload, profile)
+                    except ValueError as err:
+                        if profile != "ICCS":
+                            raise ValueError(f"Profile {profile}: {err}") from err
+                        value = None
+                        details = {
+                            "data_status": "Optional profile unavailable",
+                            "profile_error": str(err)[:160],
+                            "reading_count": 0,
+                            "api_reported_total": 0,
+                        }
                 results[profile] = {
                     "value": value,
                     "attributes": {
@@ -123,7 +144,13 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     def _parse_profile(payload: Any, profile: str) -> tuple[float | None, dict[str, Any]]:
         """Convert a profile response to daily kWh and retain useful diagnostics."""
         if not isinstance(payload, list):
-            raise ValueError("Unexpected EGD response: expected a list of profiles")
+            if isinstance(payload, dict):
+                message = payload.get("message") or payload.get("error_description") or payload.get("error")
+                response_hint = f"object keys={','.join(str(key) for key in list(payload)[:8])}"
+                if isinstance(message, str):
+                    response_hint += f", message={message[:120]}"
+                raise ValueError(f"expected a list of profiles, received {response_hint}")
+            raise ValueError(f"expected a list of profiles, received {type(payload).__name__}")
 
         profile_data = [
             item for item in payload
