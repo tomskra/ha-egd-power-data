@@ -22,4 +22,4 @@ Integrace vytváří tyto entity:
 
 ## Problémy
 
-Při hlášení problému přiložte záznamy z Home Assistantu pro `custom_components.egd_power_data`. Integrace nepíše samostatný soubor `/config/egddistribuce.log` a nezapisuje přístupové tokeny ani klientský secret do logu.
+Při hlášení problému přiložte záznamy z Home Assistantu pro `custom_components.egd_power_data`. Pro podrobné čtvrthodinové odpovědi API zapněte debug logování integrace. Logy mohou obsahovat naměřené hodnoty a časové značky; identifikátory odběrného místa, tokeny ani klientský secret se nezapisují. Integrace nepíše samostatný soubor `/config/egddistribuce.log`.

@@ -70,6 +70,12 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                     else:
                         response.raise_for_status()
                         payload = await response.json()
+                if payload is not None and _LOGGER.isEnabledFor(logging.DEBUG):
+                    _LOGGER.debug(
+                        "EGD API profile %s response: %s",
+                        profile,
+                        self._redact_sensitive_data(payload),
+                    )
                 if payload is not None:
                     try:
                         value, details = self._parse_profile(payload, profile)
@@ -97,6 +103,15 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
                         "etime": params["to"],
                     },
                 }
+                if _LOGGER.isEnabledFor(logging.DEBUG):
+                    _LOGGER.debug(
+                        "Parsed EGD profile %s: value=%s, units=%s, readings=%s, statuses=%s",
+                        profile,
+                        value,
+                        details.get("units"),
+                        details.get("reading_count"),
+                        details.get("status_counts"),
+                    )
                 if value is None and profile != "ICCS":
                     _LOGGER.warning("EGD returned no readings for profile %s", profile)
             return results
@@ -114,6 +129,30 @@ class EGDPowerDataCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
             hour=23, minute=45, second=0, microsecond=0
         )
         return start, end
+
+    @staticmethod
+    def _redact_sensitive_data(payload: Any) -> Any:
+        """Remove account identifiers and credentials from debug payload logs."""
+        sensitive_keys = {
+            "ean",
+            "eic",
+            "ean/eic",
+            "access_token",
+            "client_secret",
+            "authorization",
+        }
+        if isinstance(payload, dict):
+            return {
+                key: EGDPowerDataCoordinator._redact_sensitive_data(value)
+                for key, value in payload.items()
+                if str(key).casefold() not in sensitive_keys
+            }
+        if isinstance(payload, list):
+            return [
+                EGDPowerDataCoordinator._redact_sensitive_data(item)
+                for item in payload
+            ]
+        return payload
 
     async def _async_get_access_token(self) -> str:
         """Return a cached OAuth token or request a new one."""

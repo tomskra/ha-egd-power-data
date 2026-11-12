@@ -22,4 +22,4 @@ The measured period, interval minimum and maximum, record count, and reading sta
 
 ## Troubleshooting
 
-When reporting an issue, include the Home Assistant logs for `custom_components.egd_power_data`. The integration does not write a separate `/config/egddistribuce.log` file and does not log access tokens or the client secret.
+When reporting an issue, include the Home Assistant logs for `custom_components.egd_power_data`. Enable debug logging for this integration to include the quarter-hour API responses. Logs may contain measured values and timestamps; metering point identifiers, access tokens, and the client secret are not logged. The integration does not write a separate `/config/egddistribuce.log` file.
